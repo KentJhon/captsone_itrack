@@ -1,0 +1,251 @@
+/* --- AccountManagement.css --- */
+.account-page {
+  background-color: white;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.account-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.account-container {
+  background-color: #f0e9e9;
+  border: 1px solid #ccc;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.account-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.account-table th,
+.account-table td {
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.account-table thead th {
+  background-color: #ffffff;
+  border-bottom: 2px solid #2e87f5;
+  color: #333;
+}
+
+.account-table tbody tr:nth-child(even) {
+  background-color: #f9f6f6;
+}
+
+.account-table tbody tr:hover {
+  background-color: #f2eded;
+}
+
+.btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-update {
+  background-color: #16a34a; /* green */
+}
+
+.btn-update:hover {
+  background-color: #15803d;
+}
+
+.btn-delete {
+  background-color: #dc2626; /* red */
+}
+
+.btn-delete:hover {
+  background-color: #b91c1c;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-add {
+  background-color: #2563eb; /* blue */
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add:hover {
+  background-color: #1d4ed8;
+}
+/* Header with Add button */
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-add {
+  background-color: #2563eb; /* blue */
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-add:hover {
+  background-color: #1d4ed8;
+}
+
+/* Modal overlay + window */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.overlay.is-open {
+  display: flex;
+}
+
+/* Add padding inside the modal */
+.modal {
+  background: #f0e9e9;
+  width: 520px;
+  max-width: 92vw;
+  border-radius: 16px;
+  padding: 24px 28px; /* increased padding for breathing space */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  border: 1px solid #d9d9d9;
+}
+
+.modal-header {
+  margin-bottom: 14px;
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Form layout */
+.form-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.form-row label {
+  color: #444;
+  font-size: 0.92rem;
+}
+/* Adjust input and select fields */
+.input,
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-right: 8px; /* small gap between input edge and modal wall */
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.form-row {
+  padding-right: 8px;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-error {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+/* Modal actions */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+.btn-cancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+.btn-cancel,
+.btn-primary {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+/* Small modal size for confirmations */
+.modal.modal-sm {
+  max-width: 420px;
+}
+
+/* Toast (success message) */
+.toast {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.toast-success {
+  background: #e8f7ee;
+  color: #0f5132;
+  border: 1px solid #b6ebc6;
+}
+
+/* Ensure overlay+modal you already have will center this just like the Add User modal */

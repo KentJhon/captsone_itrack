@@ -1,0 +1,81 @@
+.activity-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+.activity-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.input, .select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  outline: none;
+}
+
+.btn {
+  background: #0b5ed7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.table-wrap {
+  overflow: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activity-table thead th {
+  text-align: left;
+  font-weight: 600;
+  background: #f7f7f9;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.activity-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f1f1;
+  vertical-align: top;
+}
+
+.activity-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.desc {
+  max-width: 520px;
+}
+
+.footer-bar {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.muted { color: #666; }
+.error { color: #b00020; font-weight: 600; }
