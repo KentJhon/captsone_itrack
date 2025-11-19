@@ -1,7 +1,7 @@
 // frontend/src/auth/api.js
 import axios from "axios";
 
-const API_BASE = "http://localhost:8000"; // or http://127.0.0.1:8000, just be consistent
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000"; // or http://127.0.0.1:8000, just be consistent
 
 const api = axios.create({
   baseURL: API_BASE,
