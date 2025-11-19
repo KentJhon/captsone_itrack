@@ -16,8 +16,7 @@ import "../views/style/Dashboard.css";
 
 // ⭐ ADD THIS
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = "http://127.0.0.1:8000";
+import API_BASE_URL from "../config";
 const LOW_STOCK_PERCENT_OF_FORECAST = 0.7;
 
 const monthNames = [
@@ -68,7 +67,7 @@ function Dashboard() {
     const fetchStats = async () => {
       try {
         setLoadingStats(true);
-        const res = await fetch(`${API_BASE}/dashboard`);
+        const res = await fetch(`${API_BASE_URL}/dashboard`);
         if (!res.ok) throw new Error("Failed to load dashboard stats");
         setStats(await res.json());
       } catch (err) {
@@ -84,7 +83,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchActiveItems = async () => {
       try {
-        const res = await fetch(`${API_BASE}/items`);
+        const res = await fetch(`${API_BASE_URL}/items`);
         if (!res.ok) throw new Error("Failed to load items");
 
         const data = await res.json();
@@ -110,7 +109,7 @@ function Dashboard() {
     const fetchLowStock = async () => {
       try {
         setLoadingLowStock(true);
-        const res = await fetch(`${API_BASE}/predictive/next_month/all`);
+        const res = await fetch(`${API_BASE_URL}/predictive/next_month/all`);
         if (!res.ok) throw new Error("Failed to load predictive data");
 
         const data = await res.json();
@@ -160,7 +159,7 @@ function Dashboard() {
     const fetchTopItems = async () => {
       try {
         setLoadingTop(true);
-        let url = `${API_BASE}/dashboard/top-items?year=${topYear}`;
+        let url = `${API_BASE_URL}/dashboard/top-items?year=${topYear}`;
         if (topMonth !== "") url += `&month=${topMonth}`;
 
         const res = await fetch(url);
@@ -188,9 +187,9 @@ function Dashboard() {
     const fetchSales = async () => {
       try {
         setLoadingSales(true);
-        const res = await fetch(
-          `${API_BASE}/dashboard/sales?year=${salesYear}`
-        );
+      const res = await fetch(
+        `${API_BASE_URL}/dashboard/sales?year=${salesYear}`
+      );
         if (!res.ok) throw new Error("Failed to load sales report");
 
         const data = await res.json();

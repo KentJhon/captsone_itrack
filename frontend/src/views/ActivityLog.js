@@ -2,10 +2,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "../views/style/ActivityLog.css";
+import API_BASE_URL from "../config";
 
 export default function ActivityLog() {
   // 👉 Adjust this to your backend URL if needed
-  const API = useMemo(() => ({ base: "http://127.0.0.1:8000" }), []);
+  const API = useMemo(() => ({ base: API_BASE_URL }), []);
 
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);

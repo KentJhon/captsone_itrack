@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../views/style/AccountManagement.css";
+import API_BASE_URL from "../config";
 
 export default function AccountManagement() {
-  const API = useMemo(() => ({ base: "http://127.0.0.1:8000" }), []);
+  const API = useMemo(() => ({ base: API_BASE_URL }), []);
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import "../OrderSlip/style/Slips.css";
+import API_BASE_URL from "../../config";
 
 export default function GarmentSlip({ onClose }) {
-  const API = useMemo(() => "http://127.0.0.1:8000", []);
+  const API = useMemo(() => API_BASE_URL, []);
   const today = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "2-digit",

@@ -4,9 +4,10 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "../OrderSlip/style/Slips.css";
 import logo from "../../assets/logo.png";
+import API_BASE_URL from "../../config";
 
 export default function JobOrderSlip({ onClose }) {
-  const API = useMemo(() => "http://127.0.0.1:8000", []);
+  const API = useMemo(() => API_BASE_URL, []);
 
   const today = new Date();
   const todayDisplay = today.toLocaleDateString("en-US", {

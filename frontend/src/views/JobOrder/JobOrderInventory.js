@@ -3,9 +3,10 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import "../JobOrder/style/JobOrderInventory.css";
+import API_BASE_URL from "../../config";
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://127.0.0.1:8000";
+axios.defaults.baseURL = API_BASE_URL;
 
 // ✅ category is exactly "Souvenir"
 const JOB_CATEGORY = "Souvenir";

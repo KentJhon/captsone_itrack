@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./style/Transaction.css";
+import API_BASE_URL from "../config";
 
 function Transaction() {
   const [transactions, setTransactions] = useState([]);
@@ -15,7 +16,7 @@ function Transaction() {
   }, []);
 
   const fetchTransactions = () => {
-    fetch("http://127.0.0.1:8000/transactions")
+    fetch(`${API_BASE_URL}/transactions`)
       .then((res) => res.json())
       .then((data) => setTransactions(data.transactions || []))
       .catch((err) => console.error("Error fetching transactions:", err));
@@ -67,7 +68,7 @@ function Transaction() {
     const payload = { OR_number: orInput.trim() || null };
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/orders/${id}/add_or`, {
+      const res = await fetch(`${API_BASE_URL}/orders/${id}/add_or`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -106,7 +107,7 @@ function Transaction() {
     const id = selectedTransaction.order_id;
     if (!window.confirm("Delete this transaction?")) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/orders/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/orders/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete");

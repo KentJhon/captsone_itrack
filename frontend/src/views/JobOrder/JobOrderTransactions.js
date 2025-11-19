@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../JobOrder/style/JobOrderTransactions.css";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
-
-const API_BASE = "http://127.0.0.1:8000";
+import API_BASE_URL from "../../config";
 
 function JobOrderTransactions() {
   const [transactions, setTransactions] = useState([]);
@@ -16,7 +15,7 @@ function JobOrderTransactions() {
   }, []);
 
   const fetchTransactions = () => {
-    fetch(`${API_BASE}/job-orders/transactions`)
+    fetch(`${API_BASE_URL}/job-orders/transactions`)
       .then((res) => res.json())
       .then((data) => setTransactions(data.transactions || []))
       .catch((err) =>

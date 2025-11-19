@@ -3,8 +3,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./style/MonthlyReport.css";
 import logo from "../assets/logo.png";
-
-const API_BASE = "http://127.0.0.1:8000";
+import API_BASE_URL from "../config";
 
 const monthNames = [
   "January",
@@ -40,7 +39,7 @@ function MonthlyReport() {
     setError("");
     try {
       const res = await fetch(
-        `${API_BASE}/reports/monthly?year=${year}&month=${month}`
+        `${API_BASE_URL}/reports/monthly?year=${year}&month=${month}`
       );
       if (!res.ok) throw new Error("Failed to fetch monthly report");
       const data = await res.json();
