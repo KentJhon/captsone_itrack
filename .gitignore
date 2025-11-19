@@ -1,15 +1,54 @@
+##############################
+# NODE / REACT
+##############################
+
 node_modules/
 frontend/node_modules/
-*.py[cod]
-__pycache__/
-backend/__pycache__/
-.env
-backend/.env
+frontend/build/
+frontend/dist/
+
+# Frontend env files
+frontend/.env
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+frontend/.env.*
+*.log
+
+##############################
+# PYTHON / FASTAPI
+##############################
+
+# Python env
 .venv/
 backend/.venv/
-frontend/.env
-*.log
-dist/
-build/
+
+# Python cache
+__pycache__/
+backend/__pycache__/
+backend/routers/__pycache__/
+backend/security/__pycache__/
+backend/services/__pycache__/
+backend/utils/__pycache__/
+
+# Python env files
+.env
+backend/.env
+
+# SQLite or local DB backups (just in case)
+backend/*.sqlite3
+*.db
+
+##############################
+# SYSTEM / EDITOR
+##############################
+
+# VS Code
+.vscode/
+
+# OS junk
 .DS_Store
-node_modules
+Thumbs.db
+
+# Logs
+*.log
