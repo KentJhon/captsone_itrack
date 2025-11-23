@@ -16,8 +16,13 @@ import "../views/style/Dashboard.css";
 
 // ⭐ ADD THIS
 import { useNavigate } from "react-router-dom";
+import api from "../auth/api";
 
-\nimport api from "../auth/api";\n\nconst LOW_STOCK_PERCENT_OF_FORECAST = 0.7;
+// Base URL for backend API (Render / local)
+const API_BASE =
+  process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000";
+
+const LOW_STOCK_PERCENT_OF_FORECAST = 0.7;
 
 const monthNames = [
   "Jan",
@@ -360,5 +365,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
-
