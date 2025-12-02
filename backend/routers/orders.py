@@ -47,16 +47,26 @@ def get_transactions():
             o.customer_name,
             o.total_price,
             o.transaction_date,
-            u.username
+            u.username,
+            GROUP_CONCAT(DISTINCT i.name ORDER BY i.name SEPARATOR ', ') AS items
         FROM `order` o
         JOIN `user` u ON o.user_id = u.user_id
+        LEFT JOIN order_line ol ON ol.order_id = o.order_id
+        LEFT JOIN item i ON i.item_id = ol.item_id
         WHERE NOT EXISTS (
             SELECT 1
-            FROM order_line ol
-            JOIN item i ON i.item_id = ol.item_id
-            WHERE ol.order_id = o.order_id
-              AND i.category = 'Souvenir'
+            FROM order_line ol2
+            JOIN item i2 ON i2.item_id = ol2.item_id
+            WHERE ol2.order_id = o.order_id
+              AND i2.category = 'Souvenir'
         )
+        GROUP BY
+            o.order_id,
+            o.OR_number,
+            o.customer_name,
+            o.total_price,
+            o.transaction_date,
+            u.username
         ORDER BY o.transaction_date DESC, o.order_id DESC
         """
     )
@@ -88,16 +98,25 @@ def get_job_order_transactions():
             o.customer_name,
             o.total_price,
             o.transaction_date,
-            u.username
+            u.username,
+            GROUP_CONCAT(DISTINCT i.name ORDER BY i.name SEPARATOR ', ') AS items
         FROM `order` o
         JOIN `user` u ON o.user_id = u.user_id
+        LEFT JOIN order_line ol ON ol.order_id = o.order_id
+        LEFT JOIN item i ON i.item_id = ol.item_id
         WHERE EXISTS (
             SELECT 1
-            FROM order_line ol
-            JOIN item i ON i.item_id = ol.item_id
-            WHERE ol.order_id = o.order_id
-              AND i.category = 'Souvenir'
+            FROM order_line ol2
+            JOIN item i2 ON i2.item_id = ol2.item_id
+            WHERE ol2.order_id = o.order_id
+              AND i2.category = 'Souvenir'
         )
+        GROUP BY
+            o.order_id,
+            o.customer_name,
+            o.total_price,
+            o.transaction_date,
+            u.username
         ORDER BY o.transaction_date DESC, o.order_id DESC
         """
     )

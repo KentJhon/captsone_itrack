@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import "./style/Transaction.css";
 import notify from "../utils/notify";
 import confirmAction from "../utils/confirm";
@@ -9,6 +9,9 @@ function Transaction() {
   const [transactions, setTransactions] = useState([]);
   const [search, setSearch] = useState("");
   const [filterMode, setFilterMode] = useState("all");
+  const [startMonth, setStartMonth] = useState("");
+  const [endMonth, setEndMonth] = useState("");
+  const [rangeError, setRangeError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [orInput, setOrInput] = useState("");
@@ -35,7 +38,26 @@ function Transaction() {
     return isNaN(time) ? 0 : time;
   };
 
-  // 💡 Derive statusFilter + sortBy from filterMode
+  const parseMonthValue = (value) => {
+    if (!value) return null;
+    const [yearStr, monthStr] = value.split("-");
+    const year = Number(yearStr);
+    const month = Number(monthStr);
+    if (!year || !month) return null;
+    return new Date(year, month - 1, 1);
+  };
+
+  useEffect(() => {
+    const start = parseMonthValue(startMonth);
+    const end = parseMonthValue(endMonth || startMonth);
+
+    if (start && end && end < start) {
+      setRangeError("End month cannot be before the start month.");
+    } else {
+      setRangeError("");
+    }
+  }, [startMonth, endMonth]);
+
   let statusFilter = "all";
   let sortBy = "latest";
 
@@ -65,24 +87,39 @@ function Transaction() {
       sortBy = "latest";
   }
 
+  const isWithinMonthRange = (t) => {
+    if (!startMonth && !endMonth) return true;
+
+    const dt = t.transaction_date ? new Date(t.transaction_date) : null;
+    if (!dt || Number.isNaN(dt.getTime())) return false;
+
+    const start = parseMonthValue(startMonth);
+    const end = parseMonthValue(endMonth || startMonth);
+
+    if (start && dt < start) return false;
+    if (end) {
+      const endExclusive = new Date(end);
+      endExclusive.setMonth(endExclusive.getMonth() + 1);
+      if (dt >= endExclusive) return false;
+    }
+    return true;
+  };
+
   const filteredTransactions = transactions
-    // 🔍 search by customer name
     .filter((t) =>
       (t.customer_name || "").toLowerCase().includes(search.toLowerCase())
     )
-    // 🎯 filter by status based on filterMode
+    .filter((t) => isWithinMonthRange(t))
     .filter((t) => {
       if (statusFilter === "all") return true;
       if (statusFilter === "pending") return !t.OR_number;
       if (statusFilter === "completed") return !!t.OR_number;
       return true;
     })
-    // 🔃 sort by date, pending first
     .sort((a, b) => {
       const aHasOR = !!a.OR_number;
       const bHasOR = !!b.OR_number;
 
-      // Pending first
       if (!aHasOR && bHasOR) return -1;
       if (aHasOR && !bHasOR) return 1;
 
@@ -159,7 +196,6 @@ function Transaction() {
     }
   };
 
-  // 🔴 Row-level delete (red minus beside ADD O.R#)
   const handleDeleteRow = async (transaction) => {
     if (!transaction) return;
     const id = transaction.order_id;
@@ -183,9 +219,174 @@ function Transaction() {
     }
   };
 
+  const handleClearMonths = () => {
+    setStartMonth("");
+    setEndMonth("");
+    setRangeError("");
+  };
+
+  const formatMonthLabel = (value) => {
+    if (!value) return "";
+    const [year, month] = value.split("-");
+    const d = new Date(Number(year), Number(month) - 1, 1);
+    return d.toLocaleString("default", { month: "long", year: "numeric" });
+  };
+
+  const handleGeneratePdf = () => {
+    if (rangeError) {
+      notify.error(rangeError);
+      return;
+    }
+
+    const printableRows = filteredTransactions.filter((t) => !!t.OR_number);
+    if (!printableRows.length) {
+      notify.error("No completed order slips for the selected month(s).");
+      return;
+    }
+
+    const startLabel = formatMonthLabel(startMonth);
+    const endLabel = formatMonthLabel(endMonth || startMonth);
+    const label =
+      startLabel && endLabel
+        ? startLabel === endLabel
+          ? `For ${startLabel}`
+          : `For ${startLabel} to ${endLabel}`
+        : "All months";
+
+    // Bond-paper table renderer to match reference slip layout
+    const escapeHtml = (str) =>
+      String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    const formatNumericDate = (input) => {
+      if (!input) return "";
+      const d = new Date(input);
+      if (Number.isNaN(d.getTime())) return String(input);
+      return d.toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      });
+    };
+
+    const buildSlipTable = (t) => {
+      const effDate = formatNumericDate(t.transaction_date) || "";
+      const name = escapeHtml(t.customer_name || "");
+      const item = escapeHtml(t.items || t.item_name || "");
+      const price = `PHP ${Number(t.total_price || 0).toFixed(2)}`;
+      const orNumber = escapeHtml(t.OR_number || "");
+
+      return `
+        <div class="slip-card">
+          <table class="slip-table">
+            <colgroup>
+              <col style="width: 38%;">
+              <col style="width: 32%;">
+              <col style="width: 30%;">
+            </colgroup>
+            <tr class="header-row top-row">
+              <td class="header-left-cell" rowspan="2">
+                <div class="header-title">BOOK CENTER</div>
+                <div class="header-sub">Instructional Manuals</div>
+              </td>
+              <td class="header-doc-cell header-blue" colspan="2">Document code No.</td>
+            </tr>
+            <tr class="header-row">
+              <td class="header-code-cell" colspan="2">FM-USTP-ED-001</td>
+            </tr>
+            <tr class="rev-row label">
+              <td class="label-blue">Revision No.</td>
+              <td class="label-blue">Effective date</td>
+              <td class="label-blue">Page no.</td>
+            </tr>
+            <tr class="rev-row value">
+              <td>0</td>
+              <td>${effDate}</td>
+              <td>1 of 1</td>
+            </tr>
+            <tr class="detail-row">
+              <td class="detail-label">NAME :</td>
+              <td class="detail-value" colspan="2">${name}</td>
+            </tr>
+            <tr class="detail-row">
+              <td class="detail-label">ITEM:</td>
+              <td class="detail-value" colspan="2">${item}</td>
+            </tr>
+            <tr class="detail-row">
+              <td class="detail-label">PRICE:</td>
+              <td class="detail-value" colspan="2">${price}</td>
+            </tr>
+            <tr class="detail-row">
+              <td class="detail-label">DATE:</td>
+              <td class="detail-value" colspan="2">${effDate}</td>
+            </tr>
+            <tr class="detail-row">
+              <td class="detail-label">OR #</td>
+              <td class="detail-value" colspan="2">${orNumber}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+    };
+
+    const slipHtml = printableRows.map((t) => buildSlipTable(t)).join("");
+
+    const html = `
+      <html>
+        <head>
+          <title>Order Slip Pack</title>
+          <style>
+            * { box-sizing: border-box; }
+            body { margin: 0; padding: 24px; font-family: "Arial", sans-serif; background: #f8fafc; }
+            h2 { margin: 0 0 4px; font-family: "Inter", system-ui, sans-serif; }
+            .meta { margin: 0 0 12px; color: #475569; font-size: 13px; font-family: "Inter", system-ui, sans-serif; }
+            .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+            .slip-card { background: #ffffff; border: 1px solid #1f2937; border-radius: 2px; padding: 6px; page-break-inside: avoid; }
+            .slip-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+            .slip-table td { border: 1px solid #1f2937; padding: 4px 6px; vertical-align: middle; }
+            .header-row td { font-weight: 700; font-size: 12px; }
+            .header-left-cell { background: #ffffff; font-weight: 700; vertical-align: top; }
+            .header-sub { font-weight: 400; font-size: 11px; margin-top: 2px; }
+            .header-doc-cell { text-align: center; }
+            .header-code-cell { text-align: center; font-weight: 700; background: #ffffff; }
+            .header-blue { background: #1f73c7; color: #ffffff; }
+            .rev-row.label td { text-align: center; font-weight: 700; background: #1f73c7; color: #ffffff; }
+            .rev-row.value td { text-align: center; font-weight: 600; background: #ffffff; }
+            .label-blue { background: #1f73c7; color: #ffffff; font-weight: 700; }
+            .detail-row .detail-label { width: 28%; font-weight: 700; background: #f5f7fa; padding-left: 6px; }
+            .detail-row .detail-value { font-weight: 600; background: #ffffff; }
+            @media print {
+              body { background: #ffffff; padding: 12px; }
+              .slip-card { border: 1px solid #1f2937; }
+              * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <h2>Order Slip Pack</h2>
+          <p class="meta">${label} · Generated ${formatDate(new Date())}</p>
+          <div class="grid">${slipHtml}</div>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      notify.error("Please allow pop-ups to view the PDF.");
+      return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
   return (
     <div className="inventory-page">
-      {/* ===== Header ===== */}
       <div className="inventory-header no-print">
         <div>
           <h2>Transaction History</h2>
@@ -196,20 +397,17 @@ function Transaction() {
         </div>
       </div>
 
-      {/* ===== Table ===== */}
       <div className="inventory-table-card">
-        {/* Search & Combined Filter */}
         <div className="filters-row no-print">
           <div className="filter-group">
             <input
               type="text"
-              placeholder="Search transactions..."
+              placeholder="Search customer name..."
               className="search-field"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
 
-            {/* Single dropdown: All / Completed / Pending / Latest / Oldest */}
             <select
               className="sort-select"
               value={filterMode}
@@ -222,7 +420,35 @@ function Transaction() {
               <option value="oldest">Oldest</option>
             </select>
           </div>
+
+          <div className="filter-group month-range-group">
+            <label className="filter-label">Month range:</label>
+            <input
+              type="month"
+              className="month-input"
+              value={startMonth}
+              onChange={(e) => setStartMonth(e.target.value)}
+            />
+            <span className="range-sep">to</span>
+            <input
+              type="month"
+              className="month-input"
+              value={endMonth}
+              onChange={(e) => setEndMonth(e.target.value)}
+            />
+
+            <button className="btn btn-outline" onClick={handleClearMonths}>
+              Clear
+            </button>
+            <button className="btn btn-primary" onClick={handleGeneratePdf}>
+              Generate PDF
+            </button>
+          </div>
         </div>
+
+        {rangeError && (
+          <div className="error-message no-print">{rangeError}</div>
+        )}
 
         <div className="inventory-table-scroll">
           <table className="inventory-table">
@@ -259,9 +485,7 @@ function Transaction() {
                     {t.OR_number ? (
                       <span className="status-pill status-done">Done</span>
                     ) : (
-                      <span className="status-pill status-pending">
-                        Pending
-                      </span>
+                      <span className="status-pill status-pending">Pending</span>
                     )}
                   </td>
                   <td className="no-print">
@@ -278,7 +502,7 @@ function Transaction() {
                           title="Delete transaction"
                           onClick={() => handleDeleteRow(t)}
                         >
-                          −
+                          ×
                         </button>
                       </div>
                     ) : (
@@ -300,7 +524,6 @@ function Transaction() {
         </div>
       </div>
 
-      {/* ===== Modal ===== */}
       {showModal && selectedTransaction && (
         <div className="modal-overlay no-print" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -315,8 +538,7 @@ function Transaction() {
                 <b>Name:</b> {selectedTransaction.customer_name}
               </p>
               <p>
-                <b>Total:</b> ₱
-                {Number(selectedTransaction.total_price).toFixed(2)}
+                <b>Total:</b> ₱{Number(selectedTransaction.total_price).toFixed(2)}
               </p>
 
               <div className="modal-input">

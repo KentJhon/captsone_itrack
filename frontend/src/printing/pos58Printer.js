@@ -108,6 +108,12 @@ function encodeText(text) {
 
 // Typical 58mm default font width
 const LINE_WIDTH = 32;
+// Column widths chosen so row length always equals LINE_WIDTH (include edge separators)
+// 2-column rows: widths sum to 29 (29 + 3 separators = 32)
+const HEADER_COLS = [11, 18]; // e.g., "BOOK CENTER" | "Document code No."
+const DETAIL_COLS = [8, 21]; // e.g., "NAME :" | value
+// 3-column rows: widths sum to 28 (28 + 4 separators = 32)
+const REVISION_COLS = [9, 11, 8]; // e.g., "Revision No." | "Eff date" | "Page no."
 
 function padCenter(text, width = LINE_WIDTH) {
   const len = text.length;
@@ -121,116 +127,147 @@ function lineSeparator() {
   return "-".repeat(LINE_WIDTH);
 }
 
+function formatNumericDate(input) {
+  if (!input) return "";
+  try {
+    const d = new Date(input);
+    if (Number.isNaN(d.getTime())) return String(input);
+    return d.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+  } catch (e) {
+    return String(input);
+  }
+}
+
+function padCell(text, width) {
+  const str = String(text ?? "");
+  if (str.length === width) return str;
+  if (str.length < width) return str + " ".repeat(width - str.length);
+  return str.slice(0, width);
+}
+
+function makeBorder(widths) {
+  return `+${widths.map((w) => "-".repeat(w)).join("+")}+`;
+}
+
+function makeRow(values, widths) {
+  return `|${values
+    .map((v, idx) => padCell(v, widths[idx]))
+    .join("|")}|`;
+}
+
+function formatDetail(label, value) {
+  return makeRow([`${label}:`, value || ""], DETAIL_COLS);
+}
+
+function buildSlipTable({
+  headerLeft,
+  headerLeftSub,
+  docCode,
+  date,
+  revision = "0",
+  page = "1 of 1",
+  name,
+  item,
+  price,
+  orNumber,
+}) {
+  const lines = [];
+
+  const effectiveDate = formatNumericDate(date);
+
+  // Header rows
+  lines.push(makeBorder(HEADER_COLS));
+  lines.push(makeRow([headerLeft, "Document code No."], HEADER_COLS));
+  lines.push(
+    makeRow(
+      [headerLeftSub || "", docCode || ""],
+      HEADER_COLS
+    )
+  );
+  lines.push(makeBorder(HEADER_COLS));
+
+  // Revision / Effective date / Page
+  lines.push(makeBorder(REVISION_COLS));
+  lines.push(makeRow(["Revision No.", "Eff date", "Page no."], REVISION_COLS));
+  lines.push(makeRow([revision, effectiveDate, page], REVISION_COLS));
+  lines.push(makeBorder(REVISION_COLS));
+
+  // Details
+  lines.push(makeBorder(DETAIL_COLS));
+  lines.push(formatDetail("NAME", name || ""));
+  lines.push(makeBorder(DETAIL_COLS));
+
+  lines.push(formatDetail("ITEM", item || ""));
+  lines.push(makeBorder(DETAIL_COLS));
+
+  lines.push(formatDetail("PRICE", price || ""));
+  lines.push(makeBorder(DETAIL_COLS));
+
+  lines.push(formatDetail("DATE", date || ""));
+  lines.push(makeBorder(DETAIL_COLS));
+
+  lines.push(formatDetail("OR #", orNumber || ""));
+  lines.push(makeBorder(DETAIL_COLS));
+
+  return lines.join("\n");
+}
+
 // ---------- Receipt builders ----------
 
 export function buildGarmentReceipt(payload) {
   const { date, customerName, course, items = [], total } = payload;
 
-  const lines = [];
+  const firstItem = items[0];
+  const itemName =
+    items.length > 1
+      ? `${items.length} items (e.g. ${firstItem?.name || ""})`
+      : firstItem?.name || "";
 
-  lines.push(padCenter("USTP DISPLAY CENTER"));
-  lines.push(padCenter("GARMENT ORDER SLIP"));
-  lines.push(lineSeparator());
+  const priceText =
+    typeof total === "number" && !Number.isNaN(total)
+      ? `PHP ${total.toFixed(2)}`
+      : "";
 
-  lines.push("Document Code: FM-USTP-ED-018");
-  if (date) lines.push(`Date: ${date}`);
-  lines.push("");
-
-  if (customerName) lines.push(`Name : ${customerName}`);
-  if (course) lines.push(`Course: ${course}`);
-  lines.push("");
-  lines.push("OR#: ________________");
-
-  lines.push(lineSeparator());
-
-  if (items.length > 0) {
-    items.forEach((item) => {
-      const name = item.name || "";
-      const qty = Number(item.qty) || 0;
-      const price = Number(item.price) || 0;
-
-      lines.push(name);
-
-      const qtyPart = ` x${qty}`;
-      const amountPart = `PHP ${price.toFixed(2)}`;
-      const spaces = Math.max(
-        LINE_WIDTH - qtyPart.length - amountPart.length,
-        1
-      );
-      lines.push(" ".repeat(spaces) + qtyPart + amountPart);
-    });
-  }
-
-  lines.push(lineSeparator());
-
-  if (typeof total === "number" && !Number.isNaN(total)) {
-    const label = "TOTAL:";
-    const value = `PHP ${total.toFixed(2)}`;
-    const spaces = Math.max(LINE_WIDTH - label.length - value.length, 1);
-    lines.push(label + " ".repeat(spaces) + value);
-  }
-
-  lines.push(lineSeparator());
-  lines.push(padCenter("Thank you!"));
-  lines.push("");
-  lines.push("");
-
-  return lines.join("\n");
+  return buildSlipTable({
+    headerLeft: "GARMENTS",
+    headerLeftSub: "USTP Display Ctr.",
+    docCode: "FM-USTP-ED-018",
+    date,
+    name: customerName,
+    item: itemName,
+    price: priceText,
+    orNumber: "",
+  });
 }
 
 export function buildBookReceipt(payload) {
   const { date, customerName, course, items = [], total } = payload;
 
-  const lines = [];
+  const firstItem = items[0];
+  const itemName =
+    items.length > 1
+      ? `${items.length} items (e.g. ${firstItem?.name || ""})`
+      : firstItem?.name || "";
 
-  lines.push(padCenter("USTP DISPLAY CENTER"));
-  lines.push(padCenter("BOOK ORDER SLIP"));
-  lines.push(lineSeparator());
+  const priceText =
+    typeof total === "number" && !Number.isNaN(total)
+      ? `PHP ${total.toFixed(2)}`
+      : "";
 
-  lines.push("Document Code: FM-USTP-ED-001");
-  if (date) lines.push(`Date: ${date}`);
-  lines.push("");
-
-  if (customerName) lines.push(`Name : ${customerName}`);
-  if (course) lines.push(`Course: ${course}`);
-  lines.push("");
-  lines.push("OR#: ________________");
-
-  lines.push(lineSeparator());
-
-  if (items.length > 0) {
-    items.forEach((item) => {
-      const name = item.name || "";
-      const qty = Number(item.qty) || 0;
-      const price = Number(item.price) || 0;
-
-      lines.push(name);
-
-      const qtyPart = ` x${qty}`;
-      const amountPart = `PHP ${price.toFixed(2)}`;
-      const spaces = Math.max(
-        LINE_WIDTH - qtyPart.length - amountPart.length,
-        1
-      );
-      lines.push(" ".repeat(spaces) + qtyPart + amountPart);
-    });
-  }
-
-  lines.push(lineSeparator());
-
-  if (typeof total === "number" && !Number.isNaN(total)) {
-    const label = "TOTAL:";
-    const value = `PHP ${total.toFixed(2)}`;
-    const spaces = Math.max(LINE_WIDTH - label.length - value.length, 1);
-    lines.push(label + " ".repeat(spaces) + value);
-  }
-
-  lines.push(lineSeparator());
-  lines.push(padCenter("Thank you!"));
-  lines.push("");
-  lines.push("");
-
-  return lines.join("\n");
+  return buildSlipTable({
+    headerLeft: "BOOK CENTER",
+    headerLeftSub: course || "Instructional Manuals",
+    docCode: "FM-USTP-ED-001",
+    date,
+    name: customerName,
+    item: itemName,
+    price: priceText,
+    orNumber: "",
+  });
 }
 
 // ---------- Print helpers ----------

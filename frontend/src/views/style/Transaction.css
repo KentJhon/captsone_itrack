@@ -118,6 +118,15 @@ body {
   align-items: center;
 }
 
+.month-range-group {
+  justify-content: flex-end;
+}
+
+.filter-label {
+  font-size: 13px;
+  color: #4b5563;
+}
+
 .search-field {
   padding: 8px 10px;
   min-width: 220px;
@@ -147,6 +156,27 @@ body {
 .sort-select:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+.month-input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  min-width: 160px;
+}
+
+.month-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+.range-sep {
+  color: #6b7280;
+  font-size: 13px;
 }
 
 /* ===== Error message ===== */
@@ -409,6 +439,47 @@ body {
   margin-top: 6px;
 }
 
+.print-hide {
+  display: block;
+}
+
+.only-print {
+  display: none;
+}
+
+.print-area {
+  font-family: "Book Antiqua", serif;
+  color: #111827;
+  padding: 20px;
+}
+
+.print-header h2 {
+  margin: 0 0 4px;
+}
+
+.print-header p {
+  margin: 2px 0;
+}
+
+.print-sub {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.print-table th,
+.print-table td {
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
+  text-align: left;
+}
+
 /* ===== Print styles ===== */
 
 @media print {
@@ -441,6 +512,14 @@ body {
 
   .inventory-table {
     min-width: auto;
+  }
+
+  .print-hide {
+    display: none !important;
+  }
+
+  .only-print {
+    display: block !important;
   }
 }
 
